@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HandoffPro - Standardized Nursing Handoff</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1f2937;
+            --light: #f3f4f6;
+            --white: #ffffff;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            padding-bottom: 80px;
+        }
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        header h1 { font-size: 1.25rem; }
+        .container { max-width: 600px; margin: 0 auto; padding: 1rem; }
+        .patient-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .patient-card h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .patient-card h3 .room {
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+        .section {
+            margin: 1rem 0;
+            padding: 0.75rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 3px solid var(--primary);
+        }
+        .section h4 {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+        .info-item {
+            font-size: 0.9rem;
+        }
+        .info-item strong { color: #374151; }
+        .checklist {
+            list-style: none;
+        }
+        .checklist li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .checklist input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--success);
+        }
+        .alert-box {
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin: 0.5rem 0;
+            font-size: 0.875rem;
+        }
+        .alert-box.high {
+            background: #fef2f2;
+            border-left: 3px solid var(--danger);
+        }
+        .alert-box.medium {
+            background: #fffbeb;
+            border-left: 3px solid var(--warning);
+        }
+        .alert-box.low {
+            background: #f0fdf4;
+            border-left: 3px solid var(--success);
+        }
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            text-align: center;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .fab {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--success);
+            color: white;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            cursor: pointer;
+            border: none;
+        }
+        .vitals {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .vital-tag {
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>HandoffPro</h1>
+    </header>
+    
+    <div class="container" id="patientList">
+        <!-- Patients will be listed here -->
+    </div>
+    
+    <button class="fab" onclick="addPatient()">+</button>
+
+    <script>
+        let patients = [
+            {
+                id: 1,
+                room: '102A',
+                name: 'John Smith',
+                age: 65,
+                diagnosis: 'CHF exacerbation',
+                allergies: ['Penicillin', 'Sulfa'],
+                codeStatus: 'Full Code',
+                iv: 'D5W @ 50ml/hr',
+                lines: 'PICC Line, Foley',
+                nursesNote: 'Daily weight 198lbs (+3 from yesterday). Diuresis 1.8L yesterday.',
+                priorities: ['Monitor I/O', 'Daily weight', 'Lasix 40mg IV'],
+                alert: 'high',
+                alertText: 'SpO2 dropping on 2L NC, consider BiPAP',
+                vitals: { temp: '99.2F', hr: '88', bp: '142/78', rr: '22', spo2: '91%' }
+            },
+            {
+                id: 2,
+                room: '104',
+                name: 'Maria Garcia',
+                age: 42,
+                diagnosis: 'Appendectomy',
+                allergies: ['NKDA'],
+                codeStatus: 'Full Code',
+                iv: 'None',
+                lines: 'Incision site intact',
+                nursesNote: 'Ambulating, tolerating PO, pain controlled',
+                priorities: ['Pain management', 'Advance diet'],
+                alert: 'low',
+                alertText: 'Ready for discharge tomorrow',
+                vitals: { temp: '98.6F', hr: '72', bp: '118/76', rr: '16', spo2: '98%' }
+            }
+        ];
+
+        function renderPatients() {
+            const container = document.getElementById('patientList');
+            container.innerHTML = patients.map(p => `
+                <div class="patient-card">
+                    <h3>${p.name} <span class="room">${p.room}</span></h3>
+                    
+                    <div class="section">
+                        <h4>Demographics</h4>
+                        <div class="info-grid">
+                            <div class="info-item"><strong>Age:</strong> ${p.age}</div>
+                            <div class="info-item"><strong>Diagnosis:</strong> ${p.diagnosis}</div>
+                            <div class="info-item"><strong>Allergies:</strong> ${p.allergies.join(', ')}</div>
+                            <div class="info-item"><strong>Code Status:</strong> ${p.codeStatus}</div>
+                        </div>
+                    </div>
+                    
+                    ${p.alert ? `<div class="alert-box ${p.alert}"><strong>ALERT:</strong> ${p.alertText}</div>` : ''}
+                    
+                    <div class="section">
+                        <h4>Vitals</h4>
+                        <div class="vitals">
+                            <span class="vital-tag">🌡️ ${p.vitals.temp}</span>
+                            <span class="vital-tag">❤️ ${p.vitals.hr}</span>
+                            <span class="vital-tag">💪 ${p.vitals.bp}</span>
+                            <span class="vital-tag">🌬️ ${p.vitals.rr}</span>
+                            <span class="vital-tag">🫁 ${p.vitals.spo2}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h4>Lines & Access</h4>
+                        <div class="info-grid">
+                            <div class="info-item"><strong>IV:</strong> ${p.iv}</div>
+                            <div class="info-item"><strong>Other:</strong> ${p.lines}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h4>Nurse's Note</h4>
+                        <p>${p.nursesNote}</p>
+                    </div>
+                    
+                    <div class="section">
+                        <h4>Priorities / Tasks</h4>
+                        <ul class="checklist">
+                            ${p.priorities.map(pr => `
+                                <li><input type="checkbox"> ${pr}</li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addPatient() {
+            const name = prompt('Patient Name:');
+            if (!name) return;
+            const room = prompt('Room #:');
+            const diagnosis = prompt('Diagnosis:');
+            
+            patients.push({
+                id: Date.now(),
+                room: room || 'TBD',
+                name: name,
+                age: 0,
+                diagnosis: diagnosis || 'TBD',
+                allergies: [],
+                codeStatus: 'Full Code',
+                iv: 'None',
+                lines: 'None',
+                nursesNote: '',
+                priorities: [],
+                alert: 'low',
+                alertText: 'New patient',
+                vitals: { temp: '-', hr: '-', bp: '-/-', rr: '-', spo2: '-%' }
+            });
+            renderPatients();
+        }
+
+        renderPatients();
+    </script>
+</body>
+</html>
