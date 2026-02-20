@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedCheck - Medication Safety</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1f2937;
+            --light: #f3f4f6;
+            --white: #ffffff;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            padding-bottom: 80px;
+        }
+        header {
+            background: var(--danger);
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        header h1 { font-size: 1.25rem; }
+        .container { max-width: 600px; margin: 0 auto; padding: 1rem; }
+        .patient-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .patient-card h3 {
+            color: var(--danger);
+            margin-bottom: 0.5rem;
+        }
+        .checklist {
+            list-style: none;
+        }
+        .checklist li {
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            background: #f8fafc;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .checklist li.checked {
+            background: #f0fdf4;
+            border-color: var(--success);
+        }
+        .checklist li.checked .status {
+            color: var(--success);
+        }
+        .checklist input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            accent-color: var(--success);
+        }
+        .med-name {
+            font-weight: 600;
+            flex: 1;
+        }
+        .med-dose {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        .status {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #94a3b8;
+        }
+        .medication-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary);
+        }
+        .med-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .med-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        .med-time {
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .med-route {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        .rights-check {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        .right-item {
+            text-align: center;
+            padding: 0.5rem;
+            background: #f1f5f9;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .right-item.done {
+            background: var(--success);
+            color: white;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .distraction-mode {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            text-align: center;
+            border: 2px solid var(--warning);
+        }
+        .distraction-mode h3 {
+            color: #92400e;
+            margin-bottom: 0.5rem;
+        }
+        .distraction-mode p {
+            color: #a16207;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>MedCheck</h1>
+    </header>
+    
+    <div class="container">
+        <div class="distraction-mode">
+            <h3>⚠️ Do Not Disturb</h3>
+            <p>Medication administration in progress</p>
+        </div>
+        
+        <div id="medications">
+            <!-- Medications will be listed here -->
+        </div>
+    </div>
+
+    <script>
+        let medications = [
+            {
+                id: 1,
+                name: 'Furosemide 40mg',
+                dose: '40mg',
+                route: 'IV Push',
+                time: '0900',
+                patient: 'John Smith - Room 102A',
+                rights: {
+                    rightPatient: false,
+                    rightDrug: false,
+                    rightDose: false,
+                    rightRoute: false,
+                    rightTime: false,
+                    rightDocumentation: false
+                }
+            },
+            {
+                id: 2,
+                name: 'Metoprolol 25mg',
+                dose: '25mg',
+                route: 'PO',
+                time: '0900',
+                patient: 'John Smith - Room 102A',
+                rights: {
+                    rightPatient: false,
+                    rightDrug: false,
+                    rightDose: false,
+                    rightRoute: false,
+                    rightTime: false,
+                    rightDocumentation: false
+                }
+            },
+            {
+                id: 3,
+                name: 'Enoxaparin 40mg',
+                dose: '40mg',
+                route: 'SubQ',
+                time: '1000',
+                patient: 'Maria Garcia - Room 104',
+                rights: {
+                    rightPatient: false,
+                    rightDrug: false,
+                    rightDose: false,
+                    rightRoute: false,
+                    rightTime: false,
+                    rightDocumentation: false
+                }
+            }
+        ];
+
+        function renderMeds() {
+            const container = document.getElementById('medications');
+            container.innerHTML = medications.map(m => `
+                <div class="medication-card">
+                    <div class="med-header">
+                        <span class="med-name">${m.name}</span>
+                        <span class="med-time">${m.time}</span>
+                    </div>
+                    <div class="med-route">${m.route} - ${m.patient}</div>
+                    
+                    <div class="rights-check">
+                        <div class="right-item ${m.rights.rightPatient ? 'done' : ''}" onclick="toggleRight(${m.id}, 'rightPatient')">Patient</div>
+                        <div class="right-item ${m.rights.rightDrug ? 'done' : ''}" onclick="toggleRight(${m.id}, 'rightDrug')">Drug</div>
+                        <div class="right-item ${m.rights.rightDose ? 'done' : ''}" onclick="toggleRight(${m.id}, 'rightDose')">Dose</div>
+                        <div class="right-item ${m.rights.rightRoute ? 'done' : ''}" onclick="toggleRight(${m.id}, 'rightRoute')">Route</div>
+                        <div class="right-item ${m.rights.rightTime ? 'done' : ''}" onclick="toggleRight(${m.id}, 'rightTime')">Time</div>
+                        <div class="right-item ${m.rights.rightDocumentation ? 'done' : ''}" onclick="toggleRight(${m.id}, 'rightDocumentation')">Doc</div>
+                    </div>
+                    
+                    <button class="btn btn-success" style="margin-top: 1rem;" onclick="completeMed(${m.id})" ${!allChecked(m) ? 'disabled' : ''}>
+                        ✓ Administer Medication
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function toggleRight(medId, right) {
+            const med = medications.find(m => m.id === medId);
+            med.rights[right] = !med.rights[right];
+            renderMeds();
+        }
+
+        function allChecked(med) {
+            return Object.values(med.rights).every(v => v === true);
+        }
+
+        function completeMed(medId) {
+            if (confirm('Confirm medication administration?')) {
+                medications = medications.filter(m => m.id !== medId);
+                renderMeds();
+            }
+        }
+
+        renderMeds();
+    </script>
+</body>
+</html>

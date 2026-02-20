@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NurseFlow — Solving Nursing Administrative Burden</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #0f766e;
+            --primary-dark: #0d9488;
+            --primary-light: #14b8a6;
+            --dark: #0f172a;
+            --gray-900: #111827;
+            --gray-700: #374151;
+            --gray-500: #6b7280;
+            --gray-300: #d1d5db;
+            --gray-100: #f3f4f6;
+            --white: #ffffff;
+            --accent: #f97316;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--gray-700);
+            background: var(--white);
+        }
+        
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--gray-100);
+            z-index: 1000;
+            padding: 1rem 2rem;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: var(--gray-700);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9375rem;
+            transition: color 0.2s;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        /* Hero */
+        header {
+            background: linear-gradient(135deg, var(--dark) 0%, #1e293b 50%, #134e4a 100%);
+            color: var(--white);
+            padding: 8rem 2rem 6rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(20, 184, 166, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(249, 115, 22, 0.1) 0%, transparent 40%);
+            pointer-events: none;
+        }
+        
+        header .hero-content {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        header h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+        }
+        
+        header h1 span {
+            color: var(--primary-light);
+        }
+        
+        header p {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+        
+        .hero-badges {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .hero-badge {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            background: var(--gray-100);
+            max-width: 1200px;
+            margin: -3rem auto 4rem;
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-card {
+            background: var(--white);
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+        
+        .stat-card .number {
+            font-size: 2.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+        }
+        
+        .stat-card .label {
+            color: var(--gray-500);
+            font-size: 0.875rem;
+            margin-top: 0.75rem;
+            line-height: 1.5;
+        }
+        
+        /* Sections */
+        section {
+            padding: 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+        
+        .section-header h2 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 1rem;
+            letter-spacing: -0.01em;
+        }
+        
+        .section-header p {
+            font-size: 1.125rem;
+            color: var(--gray-500);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Problem Cards */
+        .problems {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+        
+        .problem-card {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid var(--gray-100);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+            transition: all 0.3s ease;
+        }
+        
+        .problem-card:hover {
+            border-color: var(--primary-light);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+            transform: translateY(-2px);
+        }
+        
+        .problem-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.25rem;
+            font-size: 1.5rem;
+        }
+        
+        .problem-card h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.75rem;
+        }
+        
+        .problem-card p {
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+        
+        /* Solution Cards */
+        .solutions-section {
+            background: var(--gray-100);
+            max-width: none;
+            padding: 5rem 2rem;
+            margin-top: 4rem;
+        }
+        
+        .solutions-section .section-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .solution-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+        
+        .solution-card {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 16px;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .solution-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .solution-card:hover {
+            border-color: var(--primary-light);
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.08);
+        }
+        
+        .solution-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .solution-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .solution-card h3::after {
+            content: '→';
+            color: var(--primary);
+            transition: transform 0.3s;
+        }
+        
+        .solution-card:hover h3::after {
+            transform: translateX(4px);
+        }
+        
+        .solution-card p {
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+        
+        .solution-tag {
+            display: inline-block;
+            background: var(--gray-100);
+            color: var(--gray-500);
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            margin-top: 1rem;
+        }
+        
+        .solution-tag.sui {
+            background: #ecfdf5;
+            color: #059669;
+        }
+        
+        /* CTA */
+        .cta {
+            background: var(--dark);
+            color: var(--white);
+            padding: 5rem 2rem;
+            text-align: center;
+        }
+        
+        .cta-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .cta h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .cta p {
+            opacity: 0.8;
+            margin-bottom: 2rem;
+            font-size: 1.125rem;
+        }
+        
+        .cta a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary);
+            color: var(--white);
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .cta a:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(15, 118, 110, 0.3);
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: var(--white);
+            border-top: 1px solid var(--gray-100);
+        }
+        
+        footer p {
+            color: var(--gray-500);
+            font-size: 0.875rem;
+        }
+        
+        footer .heart {
+            color: #ef4444;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .problems,
+            .solution-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+                margin: 2rem 1rem;
+            }
+            
+            .problems,
+            .solution-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <span class="logo-icon">N</span>
+                NurseFlow
+            </a>
+            <ul class="nav-links">
+                <li><a href="#problem">Problem</a></li>
+                <li><a href="#solutions">Solutions</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <header>
+        <div class="hero-content">
+            <h1>Reclaim Your Time for <span>Patient Care</span></h1>
+            <p>We build practical tools that reduce administrative burden so nurses can focus on what matters most — their patients.</p>
+            <div class="hero-badges">
+                <span class="hero-badge">Research-Backed</span>
+                <span class="hero-badge">Nurse-Designed</span>
+                <span class="hero-badge">Texas-Made</span>
+            </div>
+        </div>
+    </header>
+    
+    <section class="stats">
+        <div class="stat-card">
+            <div class="number">92%</div>
+            <div class="label">of nurses say charting crushes job satisfaction</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">40%</div>
+            <div class="label">of each shift spent on documentation</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">40%</div>
+            <div class="label">of nurses intend to leave the profession</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">67%</div>
+            <div class="label">error rate in nursing handoff sheets</div>
+        </div>
+    </section>
+    
+    <section id="problem" class="problem-section">
+        <div class="section-header">
+            <h2>The Problem</h2>
+            <p>Nurses are drowning in administrative work. Here's what our research has uncovered.</p>
+        </div>
+        <div class="problems">
+            <div class="problem-card">
+                <div class="problem-icon">📋</div>
+                <h3>EHR Documentation Burden</h3>
+                <p>Nurses spend up to 40% of their shift on charting. Poor EHR usability and excessive clicks lead to burnout and errors.</p>
+            </div>
+            <div class="problem-card">
+                <div class="problem-icon">📅</div>
+                <h3>Scheduling Inefficiencies</h3>
+                <p>Manual scheduling causes shift conflicts, overtime issues, and doesn't account for nurse preferences or work-life balance.</p>
+            </div>
+            <div class="problem-card">
+                <div class="problem-icon">🔄</div>
+                <h3>Handoff Errors</h3>
+                <p>67% of handoff sheets contain errors — missing allergies, wrong medication info, risking patient safety.</p>
+            </div>
+            <div class="problem-card">
+                <div class="problem-icon">💊</div>
+                <h3>Medication Administration</h3>
+                <p>Interruptions during med prep cause errors. Lack of systematic feedback loops prevent continuous improvement.</p>
+            </div>
+            <div class="problem-card">
+                <div class="problem-icon">📚</div>
+                <h3>Training Gaps</h3>
+                <p>76% of nurses feel inadequately prepared to use their EHR systems, leading to frustration and potential errors.</p>
+            </div>
+            <div class="problem-card">
+                <div class="problem-icon">🔔</div>
+                <h3>No Feedback Systems</h3>
+                <p>Lack of real-time feedback on documentation errors prevents nurses from improving their workflow.</p>
+            </div>
+        </div>
+    </section>
+    
+    <section class="solutions-section" id="solutions">
+        <div class="section-content">
+            <div class="section-header">
+                <h2>Our Solutions</h2>
+                <p>Practical tools built by nurses, for nurses.</p>
+            </div>
+            <div class="solution-grid">
+                <a href="handoffpro-sui.html" class="solution-card">
+                    <h3>HandoffPro on Sui</h3>
+                    <p>Web3-powered handoff with Walrus storage, Seal access control, and immutable Sui transactions.</p>
+                    <span class="solution-tag sui">Web3</span>
+                </a>
+                <a href="handoff.html" class="solution-card">
+                    <h3>HandoffPro</h3>
+                    <p>Standardized handoff tool with patient cards, vitals tracking, and task lists. Reduce handoff errors by 80%.</p>
+                    <span class="solution-tag">Popular</span>
+                </a>
+                <a href="medcheck.html" class="solution-card">
+                    <h3>MedCheck</h3>
+                    <p>Medication safety checklist with 5-rights verification. Distraction-free mode to prevent administration errors.</p>
+                    <span class="solution-tag">Safety</span>
+                </a>
+                <a href="shiftsync.html" class="solution-card">
+                    <h3>ShiftSync</h3>
+                    <p>Nurse scheduling tool with shift management, coverage tracking, and overtime monitoring.</p>
+                    <span class="solution-tag">Scheduling</span>
+                </a>
+                <a href="nurseflow-sui-demo.html" class="solution-card">
+                    <h3>NurseFlow Sui Demo</h3>
+                    <p>Demo of nursing tools powered by the Sui Stack (Walrus, Seal, SupraOracles).</p>
+                    <span class="solution-tag sui">Demo</span>
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <section class="cta" id="contact">
+        <div class="cta-content">
+            <h2>Join the Mission</h2>
+            <p>We're building nurse-first solutions. Want to shape the future of nursing?</p>
+            <a href="mailto:hector@email.com">
+                Get Involved
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+        </div>
+    </section>
+    
+    <footer>
+        <p>Research-backed approach. Made with <span class="heart">♥</span> for nurses everywhere.</p>
+    </footer>
+</body>
+</html>

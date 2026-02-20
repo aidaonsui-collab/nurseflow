@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NurseFlow on Sui - Demo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #6d28d9;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --dark: #1f2937;
+            --light: #f3f4f6;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #00d4ff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .sui-badge {
+            background: rgba(124, 58, 237, 0.3);
+            border: 1px solid #7c3aed;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 0.875rem;
+        }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .card h3 {
+            color: #00d4ff;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .feature {
+            background: rgba(0,212,255,0.1);
+            border: 1px solid rgba(0,212,255,0.3);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        .feature h4 { color: #00d4ff; font-size: 0.9rem; margin-bottom: 0.5rem; }
+        .feature p { font-size: 0.8rem; opacity: 0.8; }
+        
+        .demo-section {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid #10b981;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .demo-section h3 { color: #10b981; margin-bottom: 1rem; }
+        
+        .btn {
+            display: inline-block;
+            background: linear-gradient(90deg, #7c3aed, #00d4ff);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            margin: 0.5rem 0.5rem 0.5rem 0;
+        }
+        .btn:hover { opacity: 0.9; }
+        
+        .log {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: monospace;
+            font-size: 0.8rem;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+        .log-entry { margin: 0.25rem 0; }
+        .log-entry.success { color: #10b981; }
+        .log-entry.info { color: #00d4ff; }
+        
+        .patient-card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-left: 3px solid #7c3aed;
+        }
+        .patient-name { font-weight: bold; color: #00d4ff; }
+        .patient-info { font-size: 0.85rem; opacity: 0.8; margin: 0.25rem 0; }
+        
+        .storage-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(124, 58, 237, 0.2);
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>NurseFlow on Sui</h1>
+            <div class="sui-badge">Built on the Sui Stack</div>
+            <p style="margin-top:1rem;opacity:0.7;">Demo/Prototype - Not for real patient data</p>
+        </header>
+        
+        <div class="card">
+            <h3>The Sui Stack</h3>
+            <div class="feature-grid">
+                <div class="feature">
+                    <h4>Walrus Storage</h4>
+                    <p>Decentralized storage for secure handoff data</p>
+                </div>
+                <div class="feature">
+                    <h4>Seal Access Control</h4>
+                    <p>Encrypted, authorized data sharing between nurses</p>
+                </div>
+                <div class="feature">
+                    <h4>Sui Transactions</h4>
+                    <p>Immutable audit trail for medication administration</p>
+                </div>
+                <div class="feature">
+                    <h4>SupraOracles</h4>
+                    <p>Real-time vital signs integration</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h3>Live Demo: HandoffPro on Sui</h3>
+            <button class="btn" onclick="createPatient()">+ Add Patient</button>
+            <button class="btn" onclick="saveToSui()">Save to Walrus</button>
+            <button class="btn" onclick="loadFromSui()">Load from Sui</button>
+            
+            <div id="patients"></div>
+            
+            <div class="log" id="log">
+                <div class="log-entry info">Ready to demo NurseFlow on Sui...</div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>Coming Soon</h3>
+            <ul style="margin-left:1.5rem;opacity:0.8;">
+                <li>MedCheck - Immutable medication logs on Sui</li>
+                <li>Nurse Credential Verification - On-chain license checks</li>
+                <li>Incident Reporting - Tamper-proof incident records</li>
+                <li>ShiftSwap - Transparent shift bidding on Sui</li>
+            </ul>
+        </div>
+        
+        <div style="text-align:center;margin-top:2rem;opacity:0.6;font-size:0.875rem;">
+            Powered by Walrus, Seal, and Sui Network
+        </div>
+    </div>
+
+    <script>
+        let patients = [
+            { id: 1, name: 'John Smith', room: '102A', diagnosis: 'CHF', nurse: 'Sarah RN' },
+            { id: 2, name: 'Maria Garcia', room: '104', diagnosis: 'Post-op', nurse: 'Mike RN' }
+        ];
+        
+        function log(msg, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            logDiv.insertBefore(entry, logDiv.firstChild);
+        }
+        
+        function renderPatients() {
+            const container = document.getElementById('patients');
+            container.innerHTML = patients.map(p => `
+                <div class="patient-card">
+                    <div style="display:flex;align-items:center;">
+                        <span class="patient-name">${p.name}</span>
+                        <span class="storage-badge">✓ On Sui</span>
+                    </div>
+                    <div class="patient-info">Room: ${p.room} | Diagnosis: ${p.diagnosis}</div>
+                    <div class="patient-info">Nurse: ${p.nurse}</div>
+                </div>
+            `).join('');
+        }
+        
+        function createPatient() {
+            const name = prompt('Patient Name:');
+            if (!name) return;
+            const room = prompt('Room #:');
+            const diagnosis = prompt('Diagnosis:');
+            
+            patients.push({
+                id: Date.now(),
+                name, room, diagnosis,
+                nurse: 'Current User'
+            });
+            renderPatients();
+            log(`Patient ${name} added locally`, 'success');
+        }
+        
+        function saveToSui() {
+            log('Initiating Walrus storage transaction...', 'info');
+            setTimeout(() => {
+                log('Data encrypted with Seal access control...', 'info');
+            }, 500);
+            setTimeout(() => {
+                log('Transaction submitted to Sui network...', 'info');
+            }, 1000);
+            setTimeout(() => {
+                log('✓ Patient data saved to Walrus', 'success');
+                log('Object ID: 0x' + Math.random().toString(16).substr(2, 16), 'success');
+            }, 1500);
+        }
+        
+        function loadFromSui() {
+            log('Querying Nautilus indexer...', 'info');
+            setTimeout(() => {
+                log('✓ Loaded 2 patient records from Sui', 'success');
+            }, 800);
+        }
+        
+        renderPatients();
+    </script>
+</body>
+</html>

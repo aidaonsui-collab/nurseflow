@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShiftSync - Nurse Scheduling</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1f2937;
+            --light: #f3f4f6;
+            --white: #ffffff;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            padding-bottom: 80px;
+        }
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-content {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 { font-size: 1.25rem; }
+        .date-nav {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .date-nav button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .container { max-width: 600px; margin: 0 auto; padding: 1rem; }
+        
+        .shift-legend {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.8rem;
+        }
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+        
+        .staff-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+        .staff-card {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .staff-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        .staff-role {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+        .shift-select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            font-size: 0.9rem;
+        }
+        .shift-d { background: #dbeafe; border-left: 3px solid #2563eb; }
+        .shift-e { background: #fef3c7; border-left: 3px solid #f59e0b; }
+        .shift-n { background: #e0e7ff; border-left: 3px solid #7c3aed; }
+        .shift-o { background: #f3f4f6; border-left: 3px solid #9ca3af; }
+        
+        .schedule-view {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .day-row {
+            display: grid;
+            grid-template-columns: 80px repeat(7, 1fr);
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .day-header {
+            background: #f8fafc;
+            padding: 0.5rem;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+        .staff-row {
+            display: grid;
+            grid-template-columns: 100px repeat(7, 1fr);
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .staff-cell {
+            padding: 0.5rem;
+            font-size: 0.75rem;
+            border-right: 1px solid #f3f4f6;
+        }
+        .shift-cell {
+            padding: 0.25rem;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .stat-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            background: white;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>ShiftSync</h1>
+            <div class="date-nav">
+                <button onclick="changeWeek(-1)">◀</button>
+                <button onclick="changeWeek(1)">▶</button>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="showTab('schedule')">Schedule</button>
+            <button class="tab-btn" onclick="showTab('staff')">Staff</button>
+            <button class="tab-btn" onclick="showTab('needs')">Coverage</button>
+        </div>
+        
+        <div id="scheduleTab">
+            <div class="shift-legend">
+                <div class="legend-item"><div class="legend-dot" style="background:#dbeafe"></div> Day (7a-7p)</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#fef3c7"></div> Eve (3p-11p)</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#e0e7ff"></div> Night (7p-7a)</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#f3f4f6"></div> Off</div>
+            </div>
+            
+            <div class="schedule-view">
+                <div class="day-row">
+                    <div class="day-header">Staff</div>
+                    <div class="day-header">Mon</div>
+                    <div class="day-header">Tue</div>
+                    <div class="day-header">Wed</div>
+                    <div class="day-header">Thu</div>
+                    <div class="day-header">Fri</div>
+                    <div class="day-header">Sat</div>
+                    <div class="day-header">Sun</div>
+                </div>
+                <div id="scheduleGrid"></div>
+            </div>
+        </div>
+        
+        <div id="staffTab" style="display:none;">
+            <div class="staff-grid" id="staffGrid"></div>
+            <button class="tab-btn active" onclick="addStaff()" style="margin-top:1rem;background:var(--success);color:white;">+ Add Staff</button>
+        </div>
+        
+        <div id="needsTab" style="display:none;">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalShifts">0</div>
+                    <div class="stat-label">Shifts Scheduled</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="otShifts">0</div>
+                    <div class="stat-label">Overtime</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="coverage">0%</div>
+                    <div class="stat-label">Coverage</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentWeek = 0;
+        let staff = [
+            { id: 1, name: 'Sarah RN', role: 'RN', shifts: {} },
+            { id: 2, name: 'Mike RN', role: 'RN', shifts: {} },
+            { id: 3, name: 'Jessica RN', role: 'RN', shifts: {} },
+            { id: 4, name: 'David RN', role: 'RN', shifts: {} },
+            { id: 5, name: 'Amy CNA', role: 'CNA', shifts: {} },
+            { id: 6, name: 'Tom CNA', role: 'CNA', shifts: {} }
+        ];
+        
+        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        
+        function getShiftClass(shift) {
+            if (!shift) return '';
+            if (shift === 'D') return 'shift-d';
+            if (shift === 'E') return 'shift-e';
+            if (shift === 'N') return 'shift-n';
+            return 'shift-o';
+        }
+        
+        function getShiftLabel(shift) {
+            if (!shift) return '-';
+            if (shift === 'D') return 'Day';
+            if (shift === 'E') return 'Eve';
+            if (shift === 'N') return 'Night';
+            return 'Off';
+        }
+        
+        function renderSchedule() {
+            const grid = document.getElementById('scheduleGrid');
+            grid.innerHTML = staff.map(s => `
+                <div class="staff-row">
+                    <div class="staff-cell"><strong>${s.name}</strong><br><small>${s.role}</small></div>
+                    ${days.map((day, i) => `
+                        <div class="shift-cell ${getShiftClass(s.shifts[i])}" onclick="cycleShift(${s.id}, ${i})">
+                            ${getShiftLabel(s.shifts[i])}
+                        </div>
+                    `).join('')}
+                </div>
+            `).join('');
+            updateStats();
+        }
+        
+        function cycleShift(staffId, dayIndex) {
+            const s = staff.find(st => st.id === staffId);
+            const shifts = ['D', 'E', 'N', 'Off'];
+            const current = s.shifts[dayIndex] || 'Off';
+            const currentIdx = shifts.indexOf(current);
+            s.shifts[dayIndex] = shifts[(currentIdx + 1) % shifts.length];
+            renderSchedule();
+        }
+        
+        function renderStaff() {
+            const grid = document.getElementById('staffGrid');
+            grid.innerHTML = staff.map(s => `
+                <div class="staff-card">
+                    <div class="staff-name">${s.name}</div>
+                    <div class="staff-role">${s.role}</div>
+                    <select class="shift-select" onchange="quickAssign(${s.id}, this.value)">
+                        <option value="">Quick Assign</option>
+                        <option value="D">Day Shift</option>
+                        <option value="E">Evening Shift</option>
+                        <option value="N">Night Shift</option>
+                        <option value="Off">Day Off</option>
+                    </select>
+                </div>
+            `).join('');
+        }
+        
+        function quickAssign(staffId, shift) {
+            if (!shift) return;
+            const s = staff.find(st => st.id === staffId);
+            // Assign to next available day
+            for (let i = 0; i < 7; i++) {
+                if (!s.shifts[i]) {
+                    s.shifts[i] = shift;
+                    break;
+                }
+            }
+            renderSchedule();
+            renderStaff();
+        }
+        
+        function addStaff() {
+            const name = prompt('Staff Name:');
+            if (!name) return;
+            const role = prompt('Role (RN/CNA):') || 'RN';
+            staff.push({ id: Date.now(), name, role, shifts: {} });
+            renderStaff();
+        }
+        
+        function updateStats() {
+            let total = 0, ot = 0;
+            Object.values(staff).forEach(s => {
+                Object.values(s.shifts).forEach(shift => {
+                    if (shift && shift !== 'Off') {
+                        total++;
+                        if (shift === 'N') ot++;
+                    }
+                });
+            });
+            document.getElementById('totalShifts').textContent = total;
+            document.getElementById('otShifts').textContent = ot;
+            const coverage = Math.round((total / 42) * 100); // 6 staff * 7 days = 42 needed
+            document.getElementById('coverage').textContent = coverage + '%';
+        }
+        
+        function showTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('scheduleTab').style.display = tab === 'schedule' ? 'block' : 'none';
+            document.getElementById('staffTab').style.display = tab === 'staff' ? 'block' : 'none';
+            document.getElementById('needsTab').style.display = tab === 'needs' ? 'block' : 'none';
+        }
+        
+        function changeWeek(delta) {
+            currentWeek += delta;
+            renderSchedule();
+        }
+        
+        renderSchedule();
+        renderStaff();
+    </script>
+</body>
+</html>

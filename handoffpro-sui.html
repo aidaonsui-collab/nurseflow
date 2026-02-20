@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HandoffPro on Sui - Demo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #6d28d9;
+            --sui: #00d4ff;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1f2937;
+            --light: #f3f4f6;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f1a, #1a1a2e);
+            color: white;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        .container { max-width: 600px; margin: 0 auto; }
+        
+        header {
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(0,212,255,0.1);
+            border: 1px solid rgba(0,212,255,0.3);
+            border-radius: 16px;
+            margin-bottom: 1rem;
+        }
+        header h1 {
+            font-size: 1.75rem;
+            background: linear-gradient(90deg, #00d4ff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .sui-badge {
+            display: inline-block;
+            background: rgba(124, 58, 237, 0.3);
+            border: 1px solid #7c3aed;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+        }
+        
+        .card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .card-header h3 {
+            color: var(--sui);
+            font-size: 1rem;
+        }
+        
+        .btn {
+            background: linear-gradient(90deg, #7c3aed, #00d4ff);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn-small { padding: 0.35rem 0.75rem; font-size: 0.75rem; }
+        
+        .patient-card {
+            background: rgba(0,212,255,0.08);
+            border: 1px solid rgba(0,212,255,0.2);
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 0.75rem 0;
+            border-left: 3px solid var(--sui);
+        }
+        .patient-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .patient-name { font-weight: bold; color: var(--sui); }
+        .patient-room { 
+            background: rgba(124, 58, 237, 0.3); 
+            padding: 0.2rem 0.5rem; 
+            border-radius: 4px; 
+            font-size: 0.75rem; 
+        }
+        
+        .info-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            margin: 0.5rem 0;
+        }
+        .info-item { opacity: 0.8; }
+        .info-item strong { color: white; }
+        
+        .alert-box {
+            padding: 0.5rem;
+            border-radius: 6px;
+            margin: 0.5rem 0;
+            font-size: 0.8rem;
+        }
+        .alert-high { background: rgba(239, 68, 68, 0.2); border-left: 3px solid var(--danger); }
+        .alert-medium { background: rgba(245, 158, 11, 0.2); border-left: 3px solid var(--warning); }
+        
+        .checklist {
+            list-style: none;
+            margin-top: 0.5rem;
+        }
+        .checklist li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0;
+            font-size: 0.8rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .checklist input[type="checkbox"] {
+            accent-color: var(--success);
+            width: 16px;
+            height: 16px;
+        }
+        
+        .sui-transaction {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-family: monospace;
+            font-size: 0.7rem;
+            margin-top: 0.75rem;
+        }
+        .sui-transaction .label {
+            color: #7c3aed;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .sui-transaction .hash {
+            color: var(--sui);
+            word-break: break-all;
+            margin: 0.25rem 0;
+        }
+        .sui-transaction .status {
+            color: var(--success);
+            font-size: 0.7rem;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .tab {
+            flex: 1;
+            padding: 0.5rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.8rem;
+            cursor: pointer;
+            color: white;
+        }
+        .tab.active {
+            background: rgba(0,212,255,0.2);
+            border-color: var(--sui);
+        }
+        
+        .vitals-grid {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+        .vital {
+            background: rgba(255,255,255,0.1);
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+        }
+        
+        .network-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 8px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            background: rgba(0,0,0,0.3);
+            color: white;
+            font-family: inherit;
+            font-size: 0.8rem;
+            resize: vertical;
+            min-height: 60px;
+        }
+        
+        .demo-note {
+            text-align: center;
+            font-size: 0.7rem;
+            opacity: 0.5;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>HandoffPro on Sui</h1>
+            <div class="sui-badge">Powered by Walrus + Seal + Sui</div>
+        </header>
+        
+        <div class="network-status">
+            <div class="status-dot"></div>
+            <span>Connected to Sui Mainnet (Demo Mode)</span>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('patients')">Patients</div>
+            <div class="tab" onclick="showTab('transactions')">Sui Transactions</div>
+            <div class="tab" onclick="showTab('storage')">Walrus Storage</div>
+        </div>
+        
+        <div id="patientsTab">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Current Patients</h3>
+                    <button class="btn btn-small" onclick="addPatient()">+ Add</button>
+                </div>
+                <div id="patientsList"></div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3>Add Nurse's Note</h3>
+                </div>
+                <textarea id="nurseNote" placeholder="Enter clinical notes..."></textarea>
+                <button class="btn" style="margin-top:0.5rem;width:100%;" onclick="saveToSui()">Save to Sui + Walrus</button>
+            </div>
+        </div>
+        
+        <div id="transactionsTab" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>On-Chain Activity</h3>
+                    <button class="btn btn-small" onclick="refreshTransactions()">Refresh</button>
+                </div>
+                <div id="transactionLog"></div>
+            </div>
+        </div>
+        
+        <div id="storageTab" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Walrus Storage</h3>
+                </div>
+                <div class="sui-transaction">
+                    <div class="label">Storage Object ID</div>
+                    <div class="hash">0x7a8b9c...def0123456789abcdef</div>
+                    <div class="status">Encrypted with Seal Access Control</div>
+                </div>
+                <div class="sui-transaction" style="margin-top:0.5rem;">
+                    <div class="label">Blob ID (Walrus)</div>
+                    <div class="hash">walrus_blob_abc123def456...</div>
+                    <div class="status">Stored on Walrus Network</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>Access Control (Seal)</h3>
+                <p style="font-size:0.8rem;opacity:0.7;margin:0.5rem 0;">
+                    Only authorized nurses can decrypt patient data. Access is tied to on-chain credentials.
+                </p>
+                <div id="accessList" style="font-size:0.8rem;"></div>
+            </div>
+        </div>
+        
+        <div class="demo-note">
+            Demo/Prototype - Not for real patient data
+        </div>
+    </div>
+
+    <script>
+        let patients = [
+            {
+                id: 1,
+                room: '102A',
+                name: 'John Smith',
+                age: 65,
+                diagnosis: 'CHF Exacerbation',
+                allergies: ['Penicillin', 'Sulfa'],
+                codeStatus: 'Full Code',
+                iv: 'D5W @ 50ml/hr',
+                notes: 'Daily weight 198lbs. Lasix 40mg IV. SpO2 91% on 2L NC.',
+                alert: 'high',
+                alertText: 'SpO2 dropping, consider BiPAP',
+                vitals: { temp: '99.2F', hr: '88', bp: '142/78', rr: '22', spo2: '91%' },
+                tasks: ['Morning weights', 'Monitor I/O', 'Lasix 40mg IV'],
+                suiTx: '0x' + Math.random().toString(16).substr(2, 16)
+            },
+            {
+                id: 2,
+                room: '104',
+                name: 'Maria Garcia',
+                age: 42,
+                diagnosis: 'Appendectomy Day 1',
+                allergies: ['NKDA'],
+                codeStatus: 'Full Code',
+                iv: 'None',
+                notes: 'Ambulating, tolerating PO, pain controlled',
+                alert: 'none',
+                alertText: '',
+                vitals: { temp: '98.6F', hr: '72', bp: '118/76', rr: '16', spo2: '98%' },
+                tasks: ['Pain management', 'Advance diet', 'Wound check'],
+                suiTx: '0x' + Math.random().toString(16).substr(2, 16)
+            }
+        ];
+        
+        let transactions = [];
+        
+        function renderPatients() {
+            const container = document.getElementById('patientsList');
+            container.innerHTML = patients.map(p => `
+                <div class="patient-card">
+                    <div class="patient-header">
+                        <span class="patient-name">${p.name}</span>
+                        <span class="patient-room">${p.room}</span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <div class="info-item"><strong>Age:</strong> ${p.age}</div>
+                        <div class="info-item"><strong>Code:</strong> ${p.codeStatus}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-item"><strong>Diagnosis:</strong> ${p.diagnosis}</div>
+                        <div class="info-item"><strong>Allergies:</strong> ${p.allergies.join(', ')}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-item"><strong>IV:</strong> ${p.iv}</div>
+                    </div>
+                    
+                    ${p.alert !== 'none' ? `<div class="alert-box alert-${p.alert}"><strong>ALERT:</strong> ${p.alertText}</div>` : ''}
+                    
+                    <div class="vitals-grid">
+                        <span class="vital">${p.vitals.temp}</span>
+                        <span class="vital">❤️ ${p.vitals.hr}</span>
+                        <span class="vital">💪 ${p.vitals.bp}</span>
+                        <span class="vital">🌬️ ${p.vitals.rr}</span>
+                        <span class="vital">🫁 ${p.vitals.spo2}</span>
+                    </div>
+                    
+                    <div style="margin-top:0.5rem;font-size:0.75rem;opacity:0.7;">Tasks:</div>
+                    <ul class="checklist">
+                        ${p.tasks.map(t => `<li><input type="checkbox"> ${t}</li>`).join('')}
+                    </ul>
+                    
+                    <div class="sui-transaction">
+                        <div class="label">Sui Object ID</div>
+                        <div class="hash">${p.suiTx}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function addPatient() {
+            const name = prompt('Patient Name:');
+            if (!name) return;
+            const room = prompt('Room #:');
+            const diagnosis = prompt('Diagnosis:');
+            
+            patients.push({
+                id: Date.now(),
+                room: room || 'TBD',
+                name: name,
+                age: 0,
+                diagnosis: diagnosis || 'TBD',
+                allergies: [],
+                codeStatus: 'Full Code',
+                iv: 'None',
+                notes: '',
+                alert: 'none',
+                alertText: '',
+                vitals: { temp: '-', hr: '-', bp: '-/-', rr: '-', spo2: '-' },
+                tasks: [],
+                suiTx: '0x' + Math.random().toString(16).substr(2, 16)
+            });
+            renderPatients();
+        }
+        
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById('patientsTab').style.display = tab === 'patients' ? 'block' : 'none';
+            document.getElementById('transactionsTab').style.display = tab === 'transactions' ? 'block' : 'none';
+            document.getElementById('storageTab').style.display = tab === 'storage' ? 'block' : 'none';
+        }
+        
+        function saveToSui() {
+            const note = document.getElementById('nurseNote').value;
+            if (!note) {
+                alert('Please enter a note');
+                return;
+            }
+            
+            const txHash = '0x' + Math.random().toString(16).substr(2, 16);
+            const blobId = 'walrus_' + Math.random().toString(36).substr(2, 12);
+            
+            const tx = {
+                hash: txHash,
+                blob: blobId,
+                type: 'Update Patient Record',
+                time: new Date().toLocaleTimeString()
+            };
+            
+            transactions.unshift(tx);
+            
+            alert('Saved to Sui!\n\nTx Hash: ' + txHash + '\nWalrus Blob: ' + blobId);
+            
+            document.getElementById('nurseNote').value = '';
+            renderTransactions();
+        }
+        
+        function renderTransactions() {
+            const container = document.getElementById('transactionLog');
+            if (transactions.length === 0) {
+                container.innerHTML = '<p style="opacity:0.5;font-size:0.8rem;">No transactions yet</p>';
+                return;
+            }
+            
+            container.innerHTML = transactions.map(tx => `
+                <div class="sui-transaction">
+                    <div class="label">${tx.type}</div>
+                    <div class="hash">${tx.hash}</div>
+                    <div style="font-size:0.65rem;opacity:0.5;margin-top:0.25rem;">${tx.time}</div>
+                    <div class="status">✓ Confirmed</div>
+                </div>
+            `).join('');
+        }
+        
+        function refreshTransactions() {
+            renderTransactions();
+        }
+        
+        // Initialize
+        renderPatients();
+        renderTransactions();
+    </script>
+</body>
+</html>
