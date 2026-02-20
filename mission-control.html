@@ -318,8 +318,9 @@
     <div class="container">
         <header>
             <div class="logo">
-                <div class="logo-icon">🚀</div>
+                <div class="logo-icon">🎯</div>
                 <h1>Mission Control</h1>
+                <span style="color: var(--text-secondary); margin-left: 10px;">| Trading Bot</span>
             </div>
             <div class="status-badge">
                 <div class="status-dot"></div>
@@ -333,7 +334,7 @@
                     <span class="card-title">BTC Price</span>
                     <div class="card-icon" style="background: rgba(247, 147, 26, 0.2);">₿</div>
                 </div>
-                <div class="card-value">$67,300</div>
+                <div class="card-value">$67,961</div>
                 <div class="card-change positive">+0.32%</div>
             </div>
             
@@ -348,20 +349,20 @@
             
             <div class="card">
                 <div class="card-header">
-                    <span class="card-title">Current PnL</span>
-                    <div class="card-icon" style="background: rgba(0, 200, 83, 0.2);">💰</div>
+                    <span class="card-title">Strategy Bias</span>
+                    <div class="card-icon" style="background: rgba(255, 23, 68, 0.2);">📉</div>
                 </div>
-                <div class="card-value">+$127.50</div>
-                <div class="card-change positive">All time</div>
+                <div class="card-value" style="color: var(--danger);">0/10</div>
+                <div class="card-change negative">Bearish</div>
             </div>
             
             <div class="card">
                 <div class="card-header">
-                    <span class="card-title">Trades Today</span>
-                    <div class="card-icon" style="background: rgba(155, 93, 229, 0.2);">📊</div>
+                    <span class="card-title">Risk/Reward</span>
+                    <div class="card-icon" style="background: rgba(0, 200, 83, 0.2);">📊</div>
                 </div>
-                <div class="card-value">3</div>
-                <div class="card-change">Win rate: 67%</div>
+                <div class="card-value">2.52</div>
+                <div class="card-change positive">R:R Ratio</div>
             </div>
         </div>
         
@@ -385,16 +386,36 @@
                 <div class="card-value" id="positionDirection">No Position</div>
                 <div class="signal-card" style="margin-top: 20px; text-align: left;">
                     <div class="signal-row">
-                        <span class="signal-label">EMA 9</span>
-                        <span class="signal-value" id="emaValue">67,129.92</span>
+                        <span class="signal-label">Bias Score</span>
+                        <span class="signal-value negative" id="biasScore">0/10</span>
                     </div>
                     <div class="signal-row">
-                        <span class="signal-label">RSI</span>
-                        <span class="signal-value" id="rsiValue">50.0</span>
+                        <span class="signal-label">Recommendation</span>
+                        <span class="signal-value negative" id="recommendation">SHORT</span>
                     </div>
                     <div class="signal-row">
-                        <span class="signal-label">Signal</span>
-                        <span class="signal-value positive" id="signalValue">NEUTRAL</span>
+                        <span class="signal-label">Long Level</span>
+                        <span class="signal-value" id="longLevel">$68,072.6</span>
+                    </div>
+                    <div class="signal-row">
+                        <span class="signal-label">Short Level</span>
+                        <span class="signal-value" id="shortLevel">$68,465</span>
+                    </div>
+                    <div class="signal-row">
+                        <span class="signal-label">TP1</span>
+                        <span class="signal-value positive" id="tp1">$67,680.2</span>
+                    </div>
+                    <div class="signal-row">
+                        <span class="signal-label">TP2</span>
+                        <span class="signal-value positive" id="tp2">$66,870</span>
+                    </div>
+                    <div class="signal-row">
+                        <span class="signal-label">Risk/Reward</span>
+                        <span class="signal-value" id="riskReward">2.52</span>
+                    </div>
+                    <div class="signal-row">
+                        <span class="signal-label">Primary Model</span>
+                        <span class="signal-value" style="color: var(--accent-purple);" id="modelName">ARCTURUS</span>
                     </div>
                 </div>
                 <div class="actions">
