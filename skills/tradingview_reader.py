@@ -1,14 +1,12 @@
 # TradingView Chart Reader
 # Reads current chart values from TradingView browser tab
-# Works with Aftermath Bot
+# Works with Aftermath Bot - Real-time Dynamic Updates
 
 import json
 import re
 from typing import Optional, Dict
 
 # TradingView indicator mappings
-# These would need to be configured based on your specific chart setup
-
 INDICATOR_NAMES = {
     "EMA": ["EMA", "Exponential Moving Average", "EMA 9"],
     "RSI": ["RSI", "Relative Strength Index"],
@@ -16,14 +14,124 @@ INDICATOR_NAMES = {
     "MFI": ["MFI", "Money Flow Index"]
 }
 
-# Hector's Trading Strategy Levels (from IMG_0911)
-# Updated: Feb 20, 2026
+
+async def read_tradingview_browser(browser, tab_id: str) -> Dict:
+    """
+    Read live data from TradingView browser tab.
+    
+    This function:
+    1. Takes a snapshot of the TradingView chart tab
+    2. Parses current price, EMA, RSI from the DOM
+    3. Returns structured data for the bot
+    
+    Requires: TradingView tab to be open and visible
+    """
+    from datetime import datetime
+    
+    result = {
+        "symbol": "BTCUSD",
+        "price": 0,
+        "ohlc": {},
+        "ema_9": 0,
+        "rsi": 50,
+        "trend": "neutral",
+        "support": [],
+        "resistance": [],
+        "timestamp": datetime.now().isoformat(),
+        "source": "browser"
+    }
+    
+    try:
+        # Get snapshot of TradingView tab
+        snapshot = browser.snapshot(tab_id)
+        
+        # Parse price from chart - look for price display
+        # TradingView typically shows price in specific elements
+        price_text = find_element_text(snapshot, ["price", "last", "close"])
+        if price_text:
+            result["price"] = parse_price(price_text)
+        
+        # Parse EMA from indicators panel
+        ema_text = find_element_text(snapshot, ["EMA", "ema", "exponential"])
+        if ema_text:
+            result["ema_9"] = parse_price(ema_text)
+        
+        # Parse RSI
+        rsi_text = find_element_text(snapshot, ["RSI", "rsi"])
+        if rsi_text:
+            result["rsi"] = parse_rsi(rsi_text)
+            
+        # Try to find support/resistance levels (horizontal lines)
+        # These are typically drawn as trendlines or price alerts
+        result["support"] = find_support_levels(snapshot)
+        result["resistance"] = find_resistance_levels(snapshot)
+        
+    except Exception as e:
+        print(f"Error reading TradingView: {e}")
+        
+    return result
+
+
+def find_element_text(snapshot: dict, keywords: list) -> Optional[str]:
+    """Search snapshot for element containing keywords"""
+    # Recursively search the snapshot tree
+    text = snapshot.get("text", "")
+    if any(kw.lower() in text.lower() for kw in keywords):
+        return text
+    for child in snapshot.get("children", []):
+        result = find_element_text(child, keywords)
+        if result:
+            return result
+    return None
+
+
+def parse_price(text: str) -> float:
+    """Extract price from text like '$67,961' or '67,961.50'"""
+    # Remove $ and commas
+    cleaned = text.replace("$", "").replace(",", "").strip()
+    # Extract first number
+    match = re.search(r'[\d.]+', cleaned)
+    if match:
+        try:
+            return float(match.group())
+        except:
+            pass
+    return 0
+
+
+def parse_rsi(text: str) -> float:
+    """Extract RSI value from text"""
+    # Look for number between 0-100
+    match = re.search(r'(\d+\.?\d*)\s*(?=|$)', text)
+    if match:
+        try:
+            val = float(match.group(1))
+            if 0 <= val <= 100:
+                return val
+        except:
+            pass
+    return 50
+
+
+def find_support_levels(snapshot: dict) -> list:
+    """Find horizontal support lines on chart"""
+    # This would look for specific DOM elements
+    # In practice, you'd need to parse drawn lines
+    return []
+
+
+def find_resistance_levels(snapshot: dict) -> list:
+    """Find horizontal resistance lines on chart"""
+    return []
+
+
+# Fallback: Default strategy levels (from your analysis)
 TRADING_LEVELS = {
     "BTCUSDT": {
-        "bias_score": 0,  # 0-10, 0 = bearish
+        "bias_score": 0,
         "recommendation": "short",
-        "long_level": 68072.6,    # Support
-        "short_level": 68465,      # Resistance
+        "long_level": 68072.6,
+        "short_level": 68465,
         "tp1": 67680.2,
         "tp2": 66870,
         "risk_reward": 2.52,
@@ -33,15 +141,6 @@ TRADING_LEVELS = {
             "volume_seer": {"match": 0.67, "active": False},
             "sniper": {"match": 0.63, "active": False}
         }
-    },
-    "SUIUSDT": {
-        "bias_score": 5,  # neutral
-        "recommendation": "watch",
-        "long_level": 0.92,
-        "short_level": 1.00,
-        "tp1": 0.98,
-        "tp2": 1.05,
-        "risk_reward": 2.0
     }
 }
 

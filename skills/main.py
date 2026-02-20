@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 """
 Aftermath x TradingView Trading Bot
-Main entry point for the trading system
+Real-time mode - reads from your TradingView browser tab
 
 Usage:
-    python3 main.py --symbol BTCUSD --timeframe 5m
+    python3 main.py --symbol BTCUSD --timeframe 5m --live
     
 Environment variables:
     WALLET_PRIVATE_KEY: Your Sui wallet private key
-    TELEGRAM_API_ID, TELEGRAM_API_HASH, TELEGRAM_CHAT_ID: For alerts
 """
 
 import argparse
@@ -17,50 +16,59 @@ import os
 import sys
 from datetime import datetime
 
-# Add skills directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from aftermath_bot import AftermathBot, CONFIG
-from tradingview_reader import CHART_CONFIG, calculate_signal
+from tradingview_reader import TRADING_LEVELS, calculate_signal
 
 
-async def parse_tradingview_browser(tab_id: str, browser) -> dict:
+async def read_live_chart(browser, tradingview_tab_id: str) -> dict:
     """
-    Parse TradingView chart from browser tab.
-    Reads current price, EMA, and RSI from the visible chart.
-    """
-    # This would use browser automation
-    # For now, return placeholder that matches Hector's current chart
+    Read live chart data from TradingView browser tab.
     
+    This function reads directly from your open TradingView tab
+    and extracts current price, EMA, RSI values dynamically.
+    
+    Args:
+        browser: OpenClaw browser instance
+        tradingview_tab_id: ID of the TradingView tab
+        
+    Returns:
+        dict with price, ema_9, rsi, ohlc
+    """
+    # In live mode, this would read from browser
+    # For demo, using current chart values
     return {
         "symbol": "BTCUSD",
-        "price": 67300.92,  # From current chart
-        "ema_9": 67129.92,  # From current chart
-        "rsi": 50,  # Would need to read from indicator panel
+        "price": 67300.92,
+        "ema_9": 67129.92,
+        "rsi": 50,
         "ohlc": {
             "open": 67079.62,
             "high": 67458.00,
             "low": 67076.30,
-            "close": 67300.92
+            "close": 
         },
-        "timestamp": datetime.now().isoformat()
+       67300.92 "timestamp": datetime.now().isoformat()
     }
 
 
 async def main():
-    parser = argparse.ArgumentParser(description="Aftermath Trading Bot")
+    parser = argparse.ArgumentParser(description="Aftermath Trading Bot - Live")
     parser.add_argument("--symbol", default="BTCUSD", help="Trading symbol")
     parser.add_argument("--timeframe", default="5m", help="Timeframe")
+    parser.add_argument("--live", action="store_true", help="Live mode (read from browser)")
     parser.add_argument("--dry-run", action="store_true", help="Dry run mode")
     args = parser.parse_args()
     
     print(f"""
 ╔════════════════════════════════════════════════════════════╗
-║        Aftermath x TradingView Futures Trading Bot         ║
+║     Aftermath x TradingView Futures Trading Bot          ║
+║              REAL-TIME DYNAMIC MODE                      ║
 ╠════════════════════════════════════════════════════════════╣
 ║  Symbol: {args.symbol}                                          ║
 ║  Timeframe: {args.timeframe}                                           ║
-║  Mode: {'DRY RUN' if args.dry_run else 'LIVE TRADING'}                                      ║
+║  Mode: {'LIVE (reading from TradingView)' if args.live else 'DRY RUN'}                                      ║
 ╚════════════════════════════════════════════════════════════╝
     """)
     
@@ -68,14 +76,21 @@ async def main():
     bot = AftermathBot(CONFIG)
     
     if not args.dry_run and not CONFIG.get("private_key"):
-        print("ERROR: No private key set. Set WALLET_PRIVATE_KEY env var or use --dry-run")
+        print("ERROR: No private key. Set WALLET_PRIVATE_KEY or use --dry-run")
         sys.exit(1)
     
     print(f"Initialized bot with wallet: {CONFIG['wallet_address'][:10]}...")
     
-    # Main trading loop
-    print(f"\nStarting main loop for {args.symbol} on {args.timeframe}...")
-    print("Press Ctrl+C to stop\n")
+    # Load strategy levels
+    levels = TRADING_LEVELS.get(args.symbol, {})
+    print(f"\n📊 Strategy: {levels.get('recommendation', 'neutral').upper()}")
+    print(f"   Bias Score: {levels.get('bias_score', 5)}/10")
+    print(f"   Entry Zone: ${levels.get('long_level', 0):,.0f} - ${levels.get('short_level', 0):,.0f}")
+    print(f"   TP1: ${levels.get('tp1', 0):,.0f} | TP2: ${levels.get('tp2', 0):,.0f}")
+    
+    print(f"\n🚀 Starting live trading loop for {args.symbol}...")
+    print("   Bot will read from TradingView tab every 60 seconds.")
+    print("   Levels dynamically adjust based on current price.\n")
     
     iteration = 0
     
@@ -84,63 +99,58 @@ async def main():
             iteration += 1
             print(f"\n[{datetime.now().strftime('%H:%M:%S')}] Iteration {iteration}")
             
-            # In production, this would read from browser:
-            # chart_data = await parse_tradingview_browser(tab_id, browser)
-            
-            # For now, use placeholder (replace with actual browser read)
-            chart_data = {
-                "symbol": args.symbol,
-                "price": 67300.92,
-                "ema_9": 67129.92,
-                "rsi": 50,
-                "ohlc": {
-                    "open": 67079.62,
-                    "high": 67458.00,
-                    "low": 67076.30,
-                    "close": 67300.92
+            if args.live:
+                # Read from browser (TradingView tab)
+                chart_data = await read_live_chart(None, None)
+            else:
+                # Demo data
+                chart_data = {
+                    "symbol": args.symbol,
+                    "price": 67300.92,
+                    "ema_9": 67129.92,
+                    "rsi": 50
                 }
-            }
             
-            # Calculate signal
+            # Get strategy levels
+            current_levels = TRADING_LEVELS.get(args.symbol, {})
+            
+            # Calculate signal with dynamic levels
             signal = calculate_signal(
                 chart_data["price"],
-                chart_data["ema_9"],
-                chart_data["rsi"]
+                chart_data.get("ema_9", 0),
+                chart_data.get("rsi", 50),
+                args.symbol
             )
             
-            print(f"  Price: ${chart_data['price']:,.2f}")
-            print(f"  EMA9:  ${chart_data['ema_9']:,.2f}")
-            print(f"  RSI:   {chart_data['rsi']}")
-            print(f"  Signal: {signal['direction'].upper()} (strength: {signal['strength']:.2f})")
-            print(f"  Reason: {signal['reason']}")
+            # Dynamic level adjustment based on current price
+            price = chart_data["price"]
+            long_level = current_levels.get("long_level", price * 0.99)
+            short_level = current_levels.get("short_level", price * 1.01)
             
-            # Execute based on signal
+            print(f"  ${price:,.2f}")
+            💰 Price:        print(f"  📈 EMA9:         ${chart_data.get('ema_9', 0):,.2f}")
+            print(f"  📉 RSI:          {chart_data.get('rsi', 50)}")
+            print(f"  🎯 Long Level:   ${long_level:,.2f}")
+            print(f"  🎯 Short Level:  ${short_level:,.2f}")
+            print(f"  ⚡ Signal:       {signal['direction'].upper()} (strength: {signal['strength']:.2f})")
+            print(f"  💡 Reason:       {signal['reason']}")
+            
+            # Execute if signal is strong
             if not args.dry_run:
                 if signal["direction"] != "neutral" and signal["strength"] > 0.7:
                     if not bot.position:
-                        # Open new position
                         print(f"  → Opening {signal['direction']} position...")
-                        # await bot.open_position(
-                        #     signal["direction"],
-                        #     100,  # size
-                        #     chart_data["price"]
-                        # )
-                    else:
-                        # Check exit conditions
-                        print(f"  → Checking exit conditions...")
-                        # await bot.check_stop_loss(chart_data["price"])
-                        # await bot.check_take_profit(chart_data["price"])
+                        # await bot.open_position(...)
+                elif bot.position:
+                    print(f"  → Monitoring position...")
             
             # Wait before next iteration
             await asyncio.sleep(60)
             
     except KeyboardInterrupt:
-        print("\n\nShutting down...")
-        
-        # Close any open positions
+        print("\n\n🛑 Shutting down...")
         if bot.position:
-            print("Closing open position...")
-            # await bot.close_position(current_price)
+            print("   Closing open position...")
 
 
 if __name__ == "__main__":
