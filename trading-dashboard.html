@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aida Trading Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0d1117; 
+            color: #e6edf3;
+            min-height: 100vh;
+        }
+        .header {
+            background: #161b22;
+            padding: 20px;
+            border-bottom: 1px solid #30363d;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { font-size: 24px; color: #58a6ff; }
+        .refresh-btn {
+            background: #238636;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .refresh-btn:hover { background: #2ea043; }
+        .container { padding: 20px; max-width: 1200px; margin: 0 auto; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .stat-label { color: #8b949e; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-size: 28px; font-weight: bold; margin-top: 8px; }
+        .stat-value.positive { color: #3fb950; }
+        .stat-value.negative { color: #f85149; }
+        
+        .section-title { font-size: 18px; margin-bottom: 16px; color: #e6edf3; }
+        
+        .positions-table, .history-table {
+            width: 100%;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td { padding: 12px 16px; text-align: left; }
+        th { background: #21262d; font-weight: 600; font-size: 12px; text-transform: uppercase; color: #8b949e; }
+        tr { border-top: 1px solid #30363d; }
+        tr:hover { background: #21262d; }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-buy { background: rgba(63, 185, 80, 0.2); color: #3fb950; }
+        .status-sell { background: rgba(248, 81, 73, 0.2); color: #f85149; }
+        
+        .loading { text-align: center; padding: 40px; color: #8b949e; }
+        .error { background: rgba(248, 81, 73, 0.1); border: 1px solid #f85149; padding: 16px; border-radius: 8px; margin-bottom: 20px; }
+        
+        .last-updated { color: #8b949e; font-size: 12px; margin-top: 20px; text-align: center; }
+        
+        .strategy-card {
+            background: linear-gradient(135deg, #1a1f2e 0%, #161b22 100%);
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        .strategy-name { color: #58a6ff; font-size: 14px; font-weight: 600; }
+        .strategy-details { margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+        .strategy-item label { color: #8b949e; font-size: 11px; display: block; }
+        .strategy-item span { font-size: 16px; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🦞 Aida Trading Dashboard</h1>
+        <button class="refresh-btn" onclick="refreshAll()">↻ Refresh</button>
+    </div>
+    
+    <div class="container">
+        <div class="strategy-card">
+            <div class="strategy-name">ARCTURUS STRATEGY (Active)</div>
+            <div class="strategy-details">
+                <div class="strategy-item">
+                    <label>Bias</label>
+                    <span>0/10 Bearish</span>
+                </div>
+                <div class="strategy-item">
+                    <label>Short Zone</label>
+                    <span>$68,072 - $68,465</span>
+                </div>
+                <div class="strategy-item">
+                    <label>TP1</label>
+                    <span>$67,680</span>
+                </div>
+                <div class="strategy-item">
+                    <label>TP2</label>
+                    <span>$66,870</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Portfolio Value</div>
+                <div class="stat-value" id="total-value">$0.00</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Unrealized P&L</div>
+                <div class="stat-value" id="pnl">$0.00</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Open Positions</div>
+                <div class="stat-value" id="positions-count">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Trades</div>
+                <div class="stat-value" id="trades-count">0</div>
+            </div>
+        </div>
+        
+        <h2 class="section-title">📊 Current Positions</h2>
+        <div id="positions-container">
+            <div class="loading">Loading positions...</div>
+        </div>
+        
+        <h2 class="section-title" style="margin-top: 32px;">📜 Trade History</h2>
+        <div id="history-container">
+            <div class="loading">Loading history...</div>
+        </div>
+        
+        <div class="last-updated" id="last-updated"></div>
+    </div>
+    
+    <script>
+        const API_KEY = 'bk_3GKNL8C5S6Z9WQEXVU6E43S92626PNZW';
+        const API_URL = 'https://api.bankr.bot';
+        
+        let tradeHistory = [];
+        
+        async function queryBankr(prompt) {
+            const response = await fetch(`${API_URL}/agent/prompt`, {
+                method: 'POST',
+                headers: {
+                    'X-API-Key': API_KEY,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ prompt })
+            });
+            const data = await response.json();
+            
+            // Poll for result
+            let attempts = 0;
+            while (attempts < 60) {
+                await new Promise(r => setTimeout(r, 2000));
+                const result = await fetch(`${API_URL}/agent/job/${data.jobId}`, {
+                    headers: { 'X-API-Key': API_KEY }
+                });
+                const resultData = await result.json();
+                if (resultData.status === 'completed') {
+                    return resultData;
+                }
+                attempts++;
+            }
+            throw new Error('Timeout waiting for response');
+        }
+        
+        async function getPortfolio() {
+            const result = await queryBankr('show my full portfolio balance with all tokens');
+            return result.response;
+        }
+        
+        async function getPrices() {
+            const result = await queryBankr('what is the current price of BTC, SOL, ETH?');
+            return result.response;
+        }
+        
+        function parsePortfolio(text) {
+            const lines = text.split('\n');
+            const positions = [];
+            let totalValue = 0;
+            
+            for (const line of lines) {
+                const match = line.match(/([A-Z]+)\s*-\s*([\d.]+)\s*\$?([\d.]+)?/);
+                if (match) {
+                    const token = match[1];
+                    const amount = parseFloat(match[2]);
+                    const value = match[3] ? parseFloat(match[3]) : 0;
+                    if (amount > 0) {
+                        positions.push({ token, amount, value });
+                        totalValue += value;
+                    }
+                }
+            }
+            return { positions, totalValue };
+        }
+        
+        function addTrade(token, type, amount, value) {
+            tradeHistory.unshift({
+                token,
+                type,
+                amount,
+                value,
+                time: new Date().toISOString()
+            });
+        }
+        
+        function renderPositions(positions, totalValue) {
+            const container = document.getElementById('positions-container');
+            document.getElementById('total-value').textContent = `$${totalValue.toFixed(2)}`;
+            document.getElementById('positions-count').textContent = positions.length;
+            
+            if (positions.length === 0) {
+                container.innerHTML = '<div class="loading">No open positions</div>';
+                return;
+            }
+            
+            let html = `
+                <table class="positions-table">
+                    <thead>
+                        <tr>
+                            <th>Token</th>
+                            <th>Amount</th>
+                            <th>Value</th>
+                            <th>% of Portfolio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            for (const pos of positions) {
+                const pct = ((pos.value / totalValue) * 100).toFixed(1);
+                html += `
+                    <tr>
+                        <td><strong>${pos.token}</strong></td>
+                        <td>${pos.amount.toFixed(6)}</td>
+                        <td>$${pos.value.toFixed(2)}</td>
+                        <td>${pct}%</td>
+                    </tr>
+                `;
+            }
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+        
+        function renderHistory() {
+            const container = document.getElementById('history-container');
+            document.getElementById('trades-count').textContent = tradeHistory.length;
+            
+            if (tradeHistory.length === 0) {
+                container.innerHTML = '<div class="loading">No trade history</div>';
+                return;
+            }
+            
+            let html = `
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Type</th>
+                            <th>Token</th>
+                            <th>Amount</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            for (const trade of tradeHistory) {
+                const time = new Date(trade.time).toLocaleString();
+                const badgeClass = trade.type === 'BUY' ? 'status-buy' : 'status-sell';
+                html += `
+                    <tr>
+                        <td>${time}</td>
+                        <td><span class="status-badge ${badgeClass}">${trade.type}</span></td>
+                        <td><strong>${trade.token}</strong></td>
+                        <td>${trade.amount.toFixed(6)}</td>
+                        <td>$${trade.value.toFixed(2)}</td>
+                    </tr>
+                `;
+            }
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+        
+        async function refreshAll() {
+            try {
+                const portfolioText = await getPortfolio();
+                const { positions, totalValue } = parsePortfolio(portfolioText);
+                
+                renderPositions(positions, totalValue);
+                renderHistory();
+                
+                document.getElementById('last-updated').textContent = 
+                    `Last updated: ${new Date().toLocaleString()}`;
+                    
+            } catch (error) {
+                document.getElementById('positions-container').innerHTML = 
+                    `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        // Add the trade we just made
+        addTrade('BTC', 'BUY', 0.00002817, 1.92);
+        addTrade('SOL', 'SELL', 0.02363, 2.00);
+        
+        // Initial render
+        renderHistory();
+        refreshAll();
+    </script>
+</body>
+</html>
